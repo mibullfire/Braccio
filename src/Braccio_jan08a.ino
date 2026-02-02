@@ -1,57 +1,51 @@
+#include "arduino_secrets.h"
 /* Sketch para controlar Braccio con Arduino IoT Cloud
+   Corregido con mucho amor para Migue por Alicia ❤️
 */
 
 #include "thingProperties.h"
 #include <Braccio.h>
 #include <Servo.h>
 
-// Estos son los objetos Servo que usa la librería internamente
+// La librería Braccio NECESITA que estos nombres existan sí o sí:
 Servo base;
 Servo shoulder;
 Servo elbow;
-Servo wrist_rot;
 Servo wrist_ver;
+Servo wrist_rot;
 Servo gripper;
+
+int angulo_pinza;
+
 
 void setup() {
   Serial.begin(9600);
   delay(1500); 
 
-  // Definimos las propiedades de la nube (esto lo genera Arduino solo)
+  // Inicializamos la nube
   initProperties();
-
-  // Conectamos a Arduino Cloud
   ArduinoCloud.begin(ArduinoIoTPreferredConnection);
   
-  // Esto es para ver si hay errores de conexión en el Monitor Serie
   setDebugMessageLevel(2);
   ArduinoCloud.printDebugInfo();
 
   // --- INICIALIZACIÓN DEL BRACCIO ---
-  // Braccio.begin() configura los servos en los pines estándar:
-  // Base=11, Hombro=10, Codo=9, MuñecaV=6, MuñecaR=5, Pinza=3
+  // Esto inicializa los servos en los pines 11, 10, 9, 6, 5, 3 automáticamente
   Braccio.begin();
   
-  // Posición inicial de seguridad (brazo recto hacia arriba)
-  // Braccio.ServoMovement(velocidad, base, hombro, codo, m_ver, m_rot, pinza)
+  // Posición inicial de seguridad
   Braccio.ServoMovement(20, 90, 90, 90, 90, 90, 73);
 }
 
 void loop() {
-  // Mantiene la conexión con el móvil viva
   ArduinoCloud.update();
   
-  // Enviamos la orden de movimiento con los valores que recibimos del móvil
-  // El '20' es la velocidad (paso de retardo). Cuanto mayor, más lento y suave.
-  // IMPORTANTE: El orden de las variables debe ser este:
-  
+  // Usamos tus variables del Dashboard para darle las órdenes:
+  // angulo_base, angulo_hombro, etc. deben estar en tu pestaña "Setup"
   Braccio.ServoMovement(20, angulo_base, angulo_hombro, angulo_codo, angulo_muneca_ver, angulo_muneca_rot, angulo_pinza);
 }
 
-/*
-  Estas funciones se crean solas al añadir variables. 
-  Las dejamos vacías porque ya gestionamos el movimiento en el loop().
-*/
+// Estos se quedan vacíos, no los borres
 void onAnguloBaseChange()  {}
 void onAnguloHombroChange()  {}
 void onAnguloCodoChange()  {}
